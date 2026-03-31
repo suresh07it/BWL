@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" targetNamespace="http://bpmn.io/schema/bpmn">
+  <process id="Process_Customer_Onboarding" name="Customer Onboarding" isExecutable="false">
+    <startEvent id="StartEvent_1" name="Start">
+      <outgoing>Flow_1fuzhsj</outgoing>
+    </startEvent>
+    <task id="Activity_1wtaell" name="test">
+      <incoming>Flow_1fuzhsj</incoming>
+      <outgoing>Flow_0nnsi5b</outgoing>
+    </task>
+    <sequenceFlow id="Flow_1fuzhsj" sourceRef="StartEvent_1" targetRef="Activity_1wtaell" />
+    <intermediateThrowEvent id="Event_0rrbsal">
+      <incoming>Flow_0nnsi5b</incoming>
+    </intermediateThrowEvent>
+    <sequenceFlow id="Flow_0nnsi5b" sourceRef="Activity_1wtaell" targetRef="Event_0rrbsal" />
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_Customer_Onboarding">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <omgdc:Bounds x="180" y="120" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1wtaell_di" bpmnElement="Activity_1wtaell">
+        <omgdc:Bounds x="270" y="98" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0rrbsal_di" bpmnElement="Event_0rrbsal">
+        <omgdc:Bounds x="432" y="120" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1fuzhsj_di" bpmnElement="Flow_1fuzhsj">
+        <omgdi:waypoint x="216" y="138" />
+        <omgdi:waypoint x="270" y="138" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0nnsi5b_di" bpmnElement="Flow_0nnsi5b">
+        <omgdi:waypoint x="370" y="138" />
+        <omgdi:waypoint x="432" y="138" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

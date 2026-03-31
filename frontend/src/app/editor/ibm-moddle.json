@@ -1,0 +1,27 @@
+{
+  "name": "IBM",
+  "uri": "http://www.ibm.com/WebSphere/bpm/BlueworksLive/Resources",
+  "prefix": "ibm",
+  "xml": {
+    "tagAlias": "lowerCase"
+  },
+  "types": [
+    {
+      "name": "Task",
+      "extends": [
+        "bpmn:Task"
+      ],
+      "properties": [
+        { "name": "participant", "type": "String", "isAttr": true },
+        { "name": "businessOwners", "type": "String", "isAttr": true },
+        { "name": "experts", "type": "String", "isAttr": true },
+        { "name": "systems", "type": "String", "isAttr": true },
+        { "name": "dueDate", "type": "String", "isAttr": true },
+        { "name": "cycleTimeValue", "type": "String", "isAttr": true },
+        { "name": "cycleTimeUnit", "type": "String", "isAttr": true },
+        { "name": "waitTimeValue", "type": "String", "isAttr": true },
+        { "name": "waitTimeUnit", "type": "String", "isAttr": true }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:ns2="http://www.ibm.com/WebSphere/bpm/BlueworksLive/Glossaries" targetNamespace="http://www.ibm.com/WebSphere/bpm/BlueworksLive/Resources">
+  <import namespace="http://www.ibm.com/WebSphere/bpm/BlueworksLive/Glossaries" location="../Glossaries.bpmn" importType="http://www.omg.org/spec/BPMN/20100524/MODEL"/>
+  <import namespace="http://www.ibm.com/WebSphere/bpm/BlueworksLive/Resources" location="../Resources.bpmn" importType="http://www.omg.org/spec/BPMN/20100524/MODEL"/>
+  <import namespace="RBS27" location="../InputOutput.xsd" importType="http://www.w3.org/2001/XMLSchema"/>
+  
+  <process processType="Private" isExecutable="false" name="1.3 - NSH and SH Customers Process" id="bpmn-50d3fe46-45ea-4096-b004-0583945b33fb">
+    <extensionElements>
+      <ns2:bpmAttributes>
+        <ns2:milestones id="bpmn-ce72fd1c-7ce0-485a-a30a-a0556d5fb786">
+          <ns2:milestone name="Identify Digital NSH &amp; Electronic SH Populations" id="bpmn-9346c1b4-bd65-49bd-a371-d4c73db65318">
+            <flowNodeRef>bpmn-ec7905a3-950a-45b9-9c7e-afdd4b412690</flowNodeRef>
+            <flowNodeRef>bpmn-2b3676bf-a93b-4567-b758-0f56b5e698cf</flowNodeRef>
+            <flowNodeRef>bpmn-1997760e-c9be-4d17-8060-6050d04632b9</flowNodeRef>
+            <flowNodeRef>bpmn-fcbbbce4-e6d7-4f92-ba4f-15c07005e327</flowNodeRef>
+            <flowNodeRef>bpmn-2456a11c-155b-43e5-9a8c-94ddb6471318</flowNodeRef>
+            <flowNodeRef>bpmn-4011687f-d053-461d-9971-c18ed1b01516</flowNodeRef>
+            <flowNodeRef>bpmn-12f9544b-bec9-46b8-8fdc-732dcfd5cf55</flowNodeRef>
+            <flowNodeRef>bpmn-c85f0ba8-1135-4fca-82e9-b589e0cb6b73</flowNodeRef>
+            <flowNodeRef>bpmn-e463c625-e1da-439d-8bdd-d8db464fa2c7</flowNodeRef>
+            <flowNodeRef>bpmn-d81f5ceb-8f1d-422c-bb8d-e5d3216e5b2e</flowNodeRef>
+            <flowNodeRef>bpmn-57049dfd-00c3-4bf2-9129-c8fc7bcb478b</flowNodeRef>
+            <flowNodeRef>bpmn-c3a7f704-d530-4cc8-8739-4c0c8e218e10</flowNodeRef>
+            <flowNodeRef>bpmn-4c1ea892-1564-4d98-87d0-565a7bd3ffba</flowNodeRef>
+          </ns2:milestone>
+        </ns2:milestones>
+      </ns2:bpmAttributes>
+    </extensionElements>
+
+    <laneSet id="bpmn-6bf9bc05-eca0-48b8-91b9-dc631d2ff2b4">
+      <lane name="Franchise" id="bpmn-e690a18c-3c30-4940-8be9-6b4f913af0ad">
+        <flowNodeRef>bpmn-fcbbbce4-e6d7-4f92-ba4f-15c07005e327</flowNodeRef>
+        <flowNodeRef>bpmn-2456a11c-155b-43e5-9a8c-94ddb6471318</flowNodeRef>
+        <flowNodeRef>bpmn-4011687f-d053-461d-9971-c18ed1b01516</flowNodeRef>
+        <flowNodeRef>bpmn-12f9544b-bec9-46b8-8fdc-732dcfd5cf55</flowNodeRef>
+        <flowNodeRef>bpmn-c85f0ba8-1135-4fca-82e9-b589e0cb6b73</flowNodeRef>
+        <flowNodeRef>bpmn-57049dfd-00c3-4bf2-9129-c8fc7bcb478b</flowNodeRef>
+      </lane>
+      <lane name="Data &amp; Analytics Analyst" id="bpmn-53b55e8f-03b7-43d3-8c2a-f8df428e0943">
+        <flowNodeRef>bpmn-ec7905a3-950a-45b9-9c7e-afdd4b412690</flowNodeRef>
+        <flowNodeRef>bpmn-2b3676bf-a93b-4567-b758-0f56b5e698cf</flowNodeRef>
+        <flowNodeRef>bpmn-1997760e-c9be-4d17-8060-6050d04632b9</flowNodeRef>
+        <flowNodeRef>bpmn-e463c625-e1da-439d-8bdd-d8db464fa2c7</flowNodeRef>
+        <flowNodeRef>bpmn-d81f5ceb-8f1d-422c-bb8d-e5d3216e5b2e</flowNodeRef>
+        <flowNodeRef>bpmn-c3a7f704-d530-4cc8-8739-4c0c8e218e10</flowNodeRef>
+        <flowNodeRef>bpmn-4c1ea892-1564-4d98-87d0-565a7bd3ffba</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <sequenceFlow sourceRef="bpmn-ec7905a3-950a-45b9-9c7e-afdd4b412690" targetRef="bpmn-2b3676bf-a93b-4567-b758-0f56b5e698cf" id="bpmn-7147c431-aa29-4185-9960-bcd46f01444b"/>
+    <sequenceFlow sourceRef="bpmn-2b3676bf-a93b-4567-b758-0f56b5e698cf" targetRef="bpmn-1997760e-c9be-4d17-8060-6050d04632b9" id="bpmn-1852579c-71d2-41b5-88da-62ddeb661e14"/>
+    <sequenceFlow sourceRef="bpmn-1997760e-c9be-4d17-8060-6050d04632b9" targetRef="bpmn-fcbbbce4-e6d7-4f92-ba4f-15c07005e327" id="bpmn-ada59dff-d3e0-4881-b2bd-f68a01435c64"/>
+    <sequenceFlow sourceRef="bpmn-fcbbbce4-e6d7-4f92-ba4f-15c07005e327" targetRef="bpmn-2456a11c-155b-43e5-9a8c-94ddb6471318" id="bpmn-ca720e6a-f8cf-428a-b26b-83e0833cff43"/>
+    <sequenceFlow sourceRef="bpmn-2456a11c-155b-43e5-9a8c-94ddb6471318" targetRef="bpmn-4011687f-d053-461d-9971-c18ed1b01516" id="bpmn-649f9536-022c-474b-adaf-d2e4e6d4efdb"/>
+    <sequenceFlow sourceRef="bpmn-4011687f-d053-461d-9971-c18ed1b01516" targetRef="bpmn-12f9544b-bec9-46b8-8fdc-732dcfd5cf55" id="bpmn-2310fee9-6996-4e01-8fc7-7886ab9e325f"/>
+    <sequenceFlow sourceRef="bpmn-12f9544b-bec9-46b8-8fdc-732dcfd5cf55" targetRef="bpmn-c85f0ba8-1135-4fca-82e9-b589e0cb6b73" id="bpmn-0a45ab9b-c6b4-40e0-be5a-9b04d355a52d"/>
+    <sequenceFlow sourceRef="bpmn-c85f0ba8-1135-4fca-82e9-b589e0cb6b73" targetRef="bpmn-e463c625-e1da-439d-8bdd-d8db464fa2c7" id="bpmn-d57a2d1e-b47f-47cd-9edf-e4fec627b2da"/>
+    <sequenceFlow sourceRef="bpmn-e463c625-e1da-439d-8bdd-d8db464fa2c7" targetRef="bpmn-d81f5ceb-8f1d-422c-bb8d-e5d3216e5b2e" id="bpmn-d462f493-42f7-4703-9257-05eee1096fb3"/>
+    <sequenceFlow sourceRef="bpmn-c85f0ba8-1135-4fca-82e9-b589e0cb6b73" targetRef="bpmn-57049dfd-00c3-4bf2-9129-c8fc7bcb478b" id="bpmn-7371f6b8-c5f2-423b-bd57-f9b5c1eda027"/>
+    <sequenceFlow sourceRef="bpmn-57049dfd-00c3-4bf2-9129-c8fc7bcb478b" targetRef="bpmn-c3a7f704-d530-4cc8-8739-4c0c8e218e10" id="bpmn-91c5e719-fb36-4fc2-a238-d53b96065125"/>
+    <sequenceFlow sourceRef="bpmn-c3a7f704-d530-4cc8-8739-4c0c8e218e10" targetRef="bpmn-4c1ea892-1564-4d98-87d0-565a7bd3ffba" id="bpmn-92552b70-56dc-4a55-92fa-d56e7e81ee3e"/>
+
+    <startEvent name="Start" id="bpmn-ec7905a3-950a-45b9-9c7e-afdd4b412690"/>
+    <task name="Provide Customer Population Cohorts" id="bpmn-2b3676bf-a93b-4567-b758-0f56b5e698cf">
+      <performer name="Data &amp; Analytics Analyst">
+        <resourceRef xmlns:res="http://www.ibm.com/WebSphere/bpm/BlueworksLive/Resources">res:bpmn-53b55e8f-03b7-43d3-8c2a-f8df428e0943</resourceRef>
+      </performer>
+    </task>
+    <task name="Share with Franchise" id="bpmn-1997760e-c9be-4d17-8060-6050d04632b9">
+      <performer name="Data &amp; Analytics Analyst">
+        <resourceRef xmlns:res="http://www.ibm.com/WebSphere/bpm/BlueworksLive/Resources">res:bpmn-53b55e8f-03b7-43d3-8c2a-f8df428e0943</resourceRef>
+      </performer>
+    </task>
+    <task name="Assess and Identify the Treatment as SH Electronic or NSH Digital First" id="bpmn-fcbbbce4-e6d7-4f92-ba4f-15c07005e327">
+      <performer name="Franchise">
+        <resourceRef xmlns:res="http://www.ibm.com/WebSphere/bpm/BlueworksLive/Resources">res:bpmn-e690a18c-3c30-4940-8be9-6b4f913af0ad</resourceRef>
+      </performer>
+    </task>
+    <task name="Provide Rationale within the CTS" id="bpmn-2456a11c-155b-43e5-9a8c-94ddb6471318">
+      <performer name="Franchise">
+        <resourceRef xmlns:res="http://www.ibm.com/WebSphere/bpm/BlueworksLive/Resources">res:bpmn-e690a18c-3c30-4940-8be9-6b4f913af0ad</resourceRef>
+      </performer>
+    </task>
+    <task name="Identify Template Required" id="bpmn-4011687f-d053-461d-9971-c18ed1b01516">
+      <performer name="Franchise">
+        <resourceRef xmlns:res="http://www.ibm.com/WebSphere/bpm/BlueworksLive/Resources">res:bpmn-e690a18c-3c30-4940-8be9-6b4f913af0ad</resourceRef>
+      </performer>
+    </task>
+    <task name="Create Letter Templates and Update with Letter codes" id="bpmn-12f9544b-bec9-46b8-8fdc-732dcfd5cf55">
+      <performer name="Franchise">
+        <resourceRef xmlns:res="http://www.ibm.com/WebSphere/bpm/BlueworksLive/Resources">res:bpmn-e690a18c-3c30-4940-8be9-6b4f913af0ad</resourceRef>
+      </performer>
+    </task>
+    <parallelGateway gatewayDirection="Diverging" name="Data &amp; Letters Handoff" id="bpmn-c85f0ba8-1135-4fca-82e9-b589e0cb6b73"/>
+    <task name="Letters &amp; Letter Matrix Sent To Portfolio Management Change Team" id="bpmn-e463c625-e1da-439d-8bdd-d8db464fa2c7">
+      <performer name="Data &amp; Analytics Analyst">
+        <resourceRef xmlns:res="http://www.ibm.com/WebSphere/bpm/BlueworksLive/Resources">res:bpmn-53b55e8f-03b7-43d3-8c2a-f8df428e0943</resourceRef>
+      </performer>
+    </task>
+    <endEvent name="End" id="bpmn-d81f5ceb-8f1d-422c-bb8d-e5d3216e5b2e"/>
+    <task name="Send Copy Of The Letter Matrix To D&amp;A" id="bpmn-57049dfd-00c3-4bf2-9129-c8fc7bcb478b">
+      <performer name="Franchise">
+        <resourceRef xmlns:res="http://www.ibm.com/WebSphere/bpm/BlueworksLive/Resources">res:bpmn-e690a18c-3c30-4940-8be9-6b4f913af0ad</resourceRef>
+      </performer>
+    </task>
+    <task name="Prepare Mailing &amp; E-Flex Files For SH / NSH Customer Cohort" id="bpmn-c3a7f704-d530-4cc8-8739-4c0c8e218e10">
+      <performer name="Data &amp; Analytics Analyst">
+        <resourceRef xmlns:res="http://www.ibm.com/WebSphere/bpm/BlueworksLive/Resources">res:bpmn-53b55e8f-03b7-43d3-8c2a-f8df428e0943</resourceRef>
+      </performer>
+    </task>
+    <endEvent name="End" id="bpmn-4c1ea892-1564-4d98-87d0-565a7bd3ffba"/>
+  </process>
+
+  <bpmndi:BPMNDiagram id="bpmn-dfb49699-d470-4543-ae56-37cb266462db">
+    <bpmndi:BPMNPlane bpmnElement="bpmn-50d3fe46-45ea-4096-b004-0583945b33fb">
+      <bpmndi:BPMNShape bpmnElement="bpmn-9346c1b4-bd65-49bd-a371-d4c73db65318" isHorizontal="false">
+        <omgdc:Bounds x="0.0" y="0.0" width="952.0" height="88.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bpmn-e690a18c-3c30-4940-8be9-6b4f913af0ad" isHorizontal="true" isExpanded="false">
+        <omgdc:Bounds x="48.0" y="48.0" width="952.0" height="88.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bpmn-53b55e8f-03b7-43d3-8c2a-f8df428e0943" isHorizontal="true" isExpanded="false">
+        <omgdc:Bounds x="48.0" y="136.0" width="952.0" height="176.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="bpmn-7147c431-aa29-4185-9960-bcd46f01444b">
+        <omgdi:waypoint x="88.0" y="176.0"/>
+        <omgdi:waypoint x="120.0" y="176.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bpmn-1852579c-71d2-41b5-88da-62ddeb661e14">
+        <omgdi:waypoint x="216.0" y="176.0"/>
+        <omgdi:waypoint x="248.0" y="176.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bpmn-ada59dff-d3e0-4881-b2bd-f68a01435c64">
+        <omgdi:waypoint x="296.0" y="152.0"/>
+        <omgdi:waypoint x="296.0" y="120.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bpmn-ca720e6a-f8cf-428a-b26b-83e0833cff43">
+        <omgdi:waypoint x="344.0" y="88.0"/>
+        <omgdi:waypoint x="376.0" y="88.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bpmn-649f9536-022c-474b-adaf-d2e4e6d4efdb">
+        <omgdi:waypoint x="472.0" y="88.0"/>
+        <omgdi:waypoint x="504.0" y="88.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bpmn-2310fee9-6996-4e01-8fc7-7886ab9e325f">
+        <omgdi:waypoint x="600.0" y="88.0"/>
+        <omgdi:waypoint x="632.0" y="88.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bpmn-0a45ab9b-c6b4-40e0-be5a-9b04d355a52d">
+        <omgdi:waypoint x="728.0" y="88.0"/>
+        <omgdi:waypoint x="792.0" y="88.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bpmn-d57a2d1e-b47f-47cd-9edf-e4fec627b2da">
+        <omgdi:waypoint x="808.0" y="104.0"/>
+        <omgdi:waypoint x="808.0" y="152.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bpmn-d462f493-42f7-4703-9257-05eee1096fb3">
+        <omgdi:waypoint x="808.0" y="208.0"/>
+        <omgdi:waypoint x="808.0" y="256.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bpmn-7371f6b8-c5f2-423b-bd57-f9b5c1eda027">
+        <omgdi:waypoint x="824.0" y="88.0"/>
+        <omgdi:waypoint x="888.0" y="88.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bpmn-91c5e719-fb36-4fc2-a238-d53b96065125">
+        <omgdi:waypoint x="936.0" y="120.0"/>
+        <omgdi:waypoint x="936.0" y="152.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bpmn-92552b70-56dc-4a55-92fa-d56e7e81ee3e">
+        <omgdi:waypoint x="936.0" y="208.0"/>
+        <omgdi:waypoint x="936.0" y="256.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape bpmnElement="bpmn-ec7905a3-950a-45b9-9c7e-afdd4b412690" isHorizontal="false" isExpanded="false">
+        <omgdc:Bounds x="68.0" y="168.0" width="24.0" height="24.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bpmn-2b3676bf-a93b-4567-b758-0f56b5e698cf" isHorizontal="false" isExpanded="false">
+        <omgdc:Bounds x="120.0" y="152.0" width="96.0" height="56.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bpmn-1997760e-c9be-4d17-8060-6050d04632b9" isHorizontal="false" isExpanded="false">
+        <omgdc:Bounds x="248.0" y="152.0" width="96.0" height="56.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bpmn-fcbbbce4-e6d7-4f92-ba4f-15c07005e327" isHorizontal="false" isExpanded="false">
+        <omgdc:Bounds x="248.0" y="64.0" width="96.0" height="56.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bpmn-2456a11c-155b-43e5-9a8c-94ddb6471318" isHorizontal="false" isExpanded="false">
+        <omgdc:Bounds x="376.0" y="64.0" width="96.0" height="56.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bpmn-4011687f-d053-461d-9971-c18ed1b01516" isHorizontal="false" isExpanded="false">
+        <omgdc:Bounds x="504.0" y="64.0" width="96.0" height="56.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bpmn-12f9544b-bec9-46b8-8fdc-732dcfd5cf55" isHorizontal="false" isExpanded="false">
+        <omgdc:Bounds x="632.0" y="64.0" width="96.0" height="56.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bpmn-c85f0ba8-1135-4fca-82e9-b589e0cb6b73" isHorizontal="false" isExpanded="false">
+        <omgdc:Bounds x="784.0" y="66.0" width="32.0" height="32.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bpmn-e463c625-e1da-439d-8bdd-d8db464fa2c7" isHorizontal="false" isExpanded="false">
+        <omgdc:Bounds x="760.0" y="152.0" width="96.0" height="56.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bpmn-d81f5ceb-8f1d-422c-bb8d-e5d3216e5b2e" isHorizontal="false" isExpanded="false">
+        <omgdc:Bounds x="796.0" y="256.0" width="24.0" height="24.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bpmn-57049dfd-00c3-4bf2-9129-c8fc7bcb478b" isHorizontal="false" isExpanded="false">
+        <omgdc:Bounds x="888.0" y="64.0" width="96.0" height="56.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bpmn-c3a7f704-d530-4cc8-8739-4c0c8e218e10" isHorizontal="false" isExpanded="false">
+        <omgdc:Bounds x="888.0" y="152.0" width="96.0" height="56.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bpmn-4c1ea892-1564-4d98-87d0-565a7bd3ffba" isHorizontal="false" isExpanded="false">
+        <omgdc:Bounds x="924.0" y="256.0" width="24.0" height="24.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNLabelStyle id="bpmn-d93af63b-01af-44ca-983a-5e8bc9908bce">
+        <omgdc:Font name="HelveticaNeue-Light" size="10.0"/>
+      </bpmndi:BPMNLabelStyle>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
