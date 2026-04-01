@@ -5,6 +5,7 @@ import { LibraryDashboard } from "./library/LibraryDashboard";
 import { SpaceDetails } from "./library/SpaceDetails";
 import { BpmnEditor } from "./editor/BpmnEditor";
 import { createProcess, listProcesses, listSpaces } from "./api/bpmnApi";
+import { CommunityPage } from "./community/CommunityPage";
 
 type Tab = "Work" | "Community" | "Library";
 type View = "LIBRARY" | "SPACE" | "EDITOR";
@@ -70,9 +71,8 @@ export function LibraryApp() {
     <div style={{ height: "100vh", background: "#f4f0fa" }}>
       <TopNav activeTab={activeTab} onTabChange={onTabChange} />
 
-      {activeTab !== "Library" ? (
-        <div style={{ padding: 16, color: "#5f5a77" }}>This tab is a placeholder. Use Library for the demo.</div>
-      ) : null}
+      {activeTab === "Community" ? <CommunityPage /> : null}
+      {activeTab === "Work" ? <div style={{ padding: 16, color: "#5f5a77" }}>This tab is a placeholder.</div> : null}
 
       {activeTab === "Library" && view === "LIBRARY" ? (
         <LibraryDashboard
@@ -120,6 +120,7 @@ export function LibraryApp() {
       {activeTab === "Library" && view === "EDITOR" && selectedSpace && selectedProcess ? (
         <BpmnEditor
           spaceName={selectedSpace.id}
+          processId={selectedProcess.id}
           processName={selectedProcess.name}
           fileName={selectedProcess.fileName}
           onBack={() => {

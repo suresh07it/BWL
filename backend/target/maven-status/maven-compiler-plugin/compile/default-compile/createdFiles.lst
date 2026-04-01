@@ -1,6 +1,0 @@
-com\bwl\controller\BpmnController.class
-com\bwl\BwlApplication.class
-com\bwl\config\CorsConfig.class
-com\bwl\service\BpmnStorageService.class
-com\bwl\config\CorsConfig$1.class
-com\bwl\storage\FileSystemStorageProvider.class

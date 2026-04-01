@@ -1,3 +1,8 @@
 node_modules/
 dist/
 */dist/
+backend/data-store/mongo/
+backend/data-store/mongo-artifacts/
+target/
+*/target/
+backend/target/

@@ -1,6 +1,7 @@
 package com.bwl.library;
 
 import com.bwl.service.BpmnStorageService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -12,9 +13,11 @@ import static com.bwl.library.LibraryDtos.*;
 public class LibraryCatalogService {
 
   private final BpmnStorageService storage;
+  private final String defaultActor;
 
-  public LibraryCatalogService(BpmnStorageService storage) {
+  public LibraryCatalogService(BpmnStorageService storage, @Value("${app.default-actor:Suresh}") String defaultActor) {
     this.storage = storage;
+    this.defaultActor = defaultActor;
   }
 
   private static final class ProcessDef {
@@ -192,7 +195,7 @@ public class LibraryCatalogService {
     return data.stream().map(s -> {
       int items = 0;
       try {
-        items = storage.listDiagramsBySpace(s.id).size();
+        items = (int) storage.listDiagramsBySpace(s.id).stream().filter(f -> f.endsWith(".bpmn")).count();
       } catch (RuntimeException ex) {
         items = s.processes.size();
       }
@@ -205,7 +208,7 @@ public class LibraryCatalogService {
     if (space == null) return List.of();
     Map<String, ProcessDto> byFile = new LinkedHashMap<>();
     for (ProcessDef p : space.processes) {
-      byFile.put(p.fileName, new ProcessDto(p.id, p.name, p.fileName, p.updatedBy, p.updatedAt));
+      byFile.put(p.fileName, new ProcessDto(spaceId + ":" + p.fileName, p.name, p.fileName, p.updatedBy, p.updatedAt));
     }
 
     List<String> files = List.of();
@@ -216,6 +219,7 @@ public class LibraryCatalogService {
     }
 
     for (String file : files) {
+      if (!file.endsWith(".bpmn")) continue;
       if (byFile.containsKey(file)) continue;
       String xml = null;
       try {
@@ -227,8 +231,8 @@ public class LibraryCatalogService {
       if (name == null || name.isBlank()) {
         name = file.replace(".bpmn", "");
       }
-      String id = file.replace(".bpmn", "");
-      byFile.put(file, new ProcessDto(id, name, file, "Suresh", today()));
+      String id = spaceId + ":" + file;
+      byFile.put(file, new ProcessDto(id, name, file, defaultActor, today()));
     }
 
     return byFile.values().stream().toList();
@@ -240,11 +244,11 @@ public class LibraryCatalogService {
       throw new IllegalArgumentException("name is required");
     }
     String fileName = request.fileName() != null && !request.fileName().isBlank() ? request.fileName().trim() : toFileName(name);
-    String id = toFileName(name).replace(".bpmn", "");
+    String id = spaceId + ":" + fileName;
     String t = today();
     String xml = diagramXml("Process_" + id.replaceAll("[^a-zA-Z0-9_]", "_"), name, "New Task", "New Service Call");
     storage.saveDiagram(spaceId, fileName, xml);
-    return new ProcessDto(id, name, fileName, "Suresh", t);
+    return new ProcessDto(id, name, fileName, defaultActor, t);
   }
 
   public void ensureSeeded() {

@@ -4,17 +4,26 @@ import Viewer from "bpmn-js/lib/Viewer";
 import ibmModdle from "./ibm-moddle.json";
 import { DetailsPanel } from "./DetailsPanel";
 import type { DiagramMetadataDoc, EditorMode, TaskMetadata } from "./types";
-import { emptyMetadataDoc, metadataFromBo, metadataToProperties } from "./types";
-import { exportDiagramPdf, getDiagramMetadata, getDiagramXml, saveDiagramMetadata, saveDiagramXml } from "../api/bpmnApi";
+import { emptyMetadataDoc, emptyTaskMetadata, metadataToProperties } from "./types";
+import { createProcessVersion, exportProcessVersionPdf, getProcessVersion, listProcessVersions } from "../api/processVersionApi";
+import type { VersionSummary } from "../api/processVersionApi";
+import { VersionSidebar } from "./VersionSidebar";
 
 type Props = {
   spaceName: string;
+  processId: string;
   processName: string;
   fileName: string;
   onBack: () => void;
 };
 
-const isTaskOfInterest = (el: any) => typeof el?.type === "string" && el.type.startsWith("bpmn:") && el.type.endsWith("Task");
+const isTaskOfInterest = (el: any) => {
+  const t = el?.type || el?.businessObject?.$type || el?.bo?.$type;
+  if (typeof t !== "string") return false;
+  if (!t.startsWith("bpmn:")) return false;
+  if (t === "bpmn:Task") return true;
+  return t.endsWith("Task");
+};
 
 const createNewDiagramXml = (processName: string) => {
   const safeId = processName.replace(/[^a-zA-Z0-9_]/g, "_");
@@ -36,21 +45,28 @@ const createNewDiagramXml = (processName: string) => {
 export function BpmnEditor(props: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const instanceRef = useRef<any>(null);
-  const [mode, setMode] = useState<EditorMode>("VIEW");
+  const [userMode, setUserMode] = useState<EditorMode>("VIEW");
   const [xml, setXml] = useState<string>("");
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [panelOpen, setPanelOpen] = useState(false);
   const [selectedElement, setSelectedElement] = useState<any | null>(null);
   const [selectedName, setSelectedName] = useState("");
-  const [initialMeta, setInitialMeta] = useState<TaskMetadata>(() => metadataFromBo(null));
   const [metadataDoc, setMetadataDoc] = useState<DiagramMetadataDoc>(() => emptyMetadataDoc());
   const [exportOpen, setExportOpen] = useState(false);
   const [exportState, setExportState] = useState<"idle" | "downloadingImage" | "downloadingPdf">("idle");
   const [saveState, setSaveState] = useState<"idle" | "saved">("idle");
   const saveStateRef = useRef<"idle" | "saved">("idle");
+  const [versions, setVersions] = useState<VersionSummary[]>([]);
+  const [activeVersionNumber, setActiveVersionNumber] = useState<number | null>(null);
+  const [activeVersionCurrent, setActiveVersionCurrent] = useState<boolean>(true);
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [selectedElementName, setSelectedElementName] = useState<string | null>(null);
+  const saveDoneTimerRef = useRef<number | null>(null);
 
   const markDirty = () => {
+    if (!activeVersionCurrent) return;
+    if (effectiveMode !== "EDIT") return;
     if (saveStateRef.current === "saved") setSaveState("idle");
   };
 
@@ -59,10 +75,34 @@ export function BpmnEditor(props: Props) {
   }, [saveState]);
 
   useEffect(() => {
-    setSaveState("idle");
-  }, [mode, props.spaceName, props.fileName]);
+    if (saveDoneTimerRef.current) {
+      window.clearTimeout(saveDoneTimerRef.current);
+      saveDoneTimerRef.current = null;
+    }
+    if (saveState === "saved") {
+      saveDoneTimerRef.current = window.setTimeout(() => {
+        setUserMode("VIEW");
+        setSaveState("idle");
+      }, 2000);
+    }
+    return () => {
+      if (saveDoneTimerRef.current) {
+        window.clearTimeout(saveDoneTimerRef.current);
+        saveDoneTimerRef.current = null;
+      }
+    };
+  }, [saveState]);
 
-  const title = useMemo(() => props.processName, [props.processName]);
+  useEffect(() => {
+    setSaveState("idle");
+  }, [userMode, props.spaceName, props.fileName, props.processId]);
+
+  const effectiveMode: EditorMode = activeVersionCurrent ? userMode : "VIEW";
+
+  const title = useMemo(() => {
+    const v = activeVersionNumber ? `v${activeVersionNumber}` : "";
+    return `Process: ${props.processName}${v ? ` [${v}]` : ""}${activeVersionCurrent ? "" : " [Read-only]"}`;
+  }, [props.processName, activeVersionNumber, activeVersionCurrent]);
 
   const importXml = async (nextXml: string) => {
     if (!instanceRef.current) return;
@@ -78,32 +118,52 @@ export function BpmnEditor(props: Props) {
 
   const openDetailsForElement = (element: any) => {
     if (!element || !isTaskOfInterest(element)) return;
-    markDirty();
     setSelectedElement(element);
+    setSelectedElementId(element.id);
+    setSelectedElementName(element.businessObject?.name || element.id);
     setSelectedName(element.businessObject?.name || element.id);
-    const fromJson = metadataDoc.tasks?.[element.id];
-    setInitialMeta(fromJson ? fromJson : metadataFromBo(element.businessObject));
     setPanelOpen(true);
   };
 
-  useEffect(() => {
+  const loadVersion = async (versionNumber: number) => {
+    const snap = await getProcessVersion(props.processId, versionNumber);
+    if (!snap) {
+      setLoadError("Failed to load version");
+      return;
+    }
     setSaveState("idle");
-    const load = async () => {
-      const fromApi = await getDiagramXml(props.spaceName, props.fileName);
-      if (fromApi) {
-        setXml(fromApi);
-      } else {
-        setXml(createNewDiagramXml(props.processName));
-      }
+    setActiveVersionNumber(snap.versionNumber);
+    setActiveVersionCurrent(Boolean(snap.current));
+    setXml(snap.bpmnXml || createNewDiagramXml(props.processName));
+    setMetadataDoc(snap.taskMetadata ?? emptyMetadataDoc());
+    setPanelOpen(false);
+    setSelectedElement(null);
+    setSelectedElementId(null);
+    setSelectedElementName(null);
+    setLoadError(null);
+  };
 
-      setMetadataDoc(await getDiagramMetadata(props.spaceName, props.fileName));
+  useEffect(() => {
+    const load = async () => {
+      const v = await listProcessVersions(props.processId);
+      setVersions(v);
+      const current = v.find((x) => x.current) ?? v[0];
+      if (!current) {
+        setSaveState("idle");
+        setActiveVersionNumber(null);
+        setActiveVersionCurrent(true);
+        setXml(createNewDiagramXml(props.processName));
+        setMetadataDoc(emptyMetadataDoc());
+        return;
+      }
+      await loadVersion(current.versionNumber);
     };
     void load();
-  }, [props.spaceName, props.fileName, props.processName]);
+  }, [props.processId, props.processName]);
 
   useEffect(() => {
     if (!containerRef.current) return;
-    instanceRef.current = mode === "VIEW"
+    instanceRef.current = effectiveMode === "VIEW"
       ? new Viewer({ container: containerRef.current, moddleExtensions: { ibm: ibmModdle as any } })
       : new Modeler({ container: containerRef.current, moddleExtensions: { ibm: ibmModdle as any } });
 
@@ -111,9 +171,9 @@ export function BpmnEditor(props: Props) {
     const elementRegistry = instanceRef.current.get("elementRegistry");
 
     const onDblClick = (e: any) => {
-      markDirty();
       const el = e?.element;
-      openDetailsForElement(el);
+      const target = el?.type === "bpmn:Label" ? el?.labelTarget : el;
+      openDetailsForElement(target);
     };
 
     const onElementChanged = (e: any) => {
@@ -123,8 +183,7 @@ export function BpmnEditor(props: Props) {
     };
 
     const onCreated = (e: any) => {
-      if (mode !== "EDIT") return;
-      markDirty();
+      if (effectiveMode !== "EDIT") return;
       const shape = e?.context?.shape;
       openDetailsForElement(shape);
     };
@@ -138,14 +197,16 @@ export function BpmnEditor(props: Props) {
     eventBus.on("commandStack.shape.create.postExecuted", onCreated);
     eventBus.on("commandStack.changed", onCommand);
 
+    // no accessories panel; selection changes are not used
+
     const domDblClick = (ev: MouseEvent) => {
-      markDirty();
       const target = ev.target as Element | null;
       const elWithId = target?.closest?.("[data-element-id]") as Element | null;
       const elementId = elWithId?.getAttribute?.("data-element-id");
       if (!elementId) return;
       const el = elementRegistry.get(elementId);
-      openDetailsForElement(el);
+      const resolved = el?.type === "bpmn:Label" ? el?.labelTarget : el;
+      openDetailsForElement(resolved);
     };
     containerRef.current.addEventListener("dblclick", domDblClick);
 
@@ -160,22 +221,29 @@ export function BpmnEditor(props: Props) {
       instanceRef.current?.destroy();
       instanceRef.current = null;
     };
-  }, [mode]);
+  }, [effectiveMode]);
 
   useEffect(() => {
-    setSaveState("idle");
     void importXml(xml || createNewDiagramXml(props.processName));
   }, [xml]);
 
   const save = async () => {
     if (!instanceRef.current?.saveXML) return;
-    setSaveState("saved");
+    if (!activeVersionCurrent) return;
+    if (effectiveMode !== "EDIT") return;
     try {
       const result = await instanceRef.current.saveXML({ format: true });
       if (!result?.xml) throw new Error("no xml");
-      setXml(result.xml);
-      const ok = await saveDiagramXml(props.spaceName, props.fileName, result.xml);
-      if (!ok) throw new Error("save failed");
+      const created = await createProcessVersion(props.processId, result.xml, metadataDoc, "Suresh");
+      if (!created) throw new Error("snapshot failed");
+
+      setXml(created.bpmnXml);
+      setMetadataDoc(created.taskMetadata ?? emptyMetadataDoc());
+      setActiveVersionNumber(created.versionNumber);
+      setActiveVersionCurrent(true);
+      setVersions(await listProcessVersions(props.processId));
+      setLoadError(null);
+      setSaveState("saved");
     } catch {
       setSaveState("idle");
       setLoadError("Failed to save BPMN diagram");
@@ -205,27 +273,21 @@ export function BpmnEditor(props: Props) {
     downloadBlob(name, new Blob([content], { type: contentType }));
   };
 
-  const applyMetadata = (meta: TaskMetadata) => {
-    if (!selectedElement) return;
-    const nextDoc: DiagramMetadataDoc = {
-      tasks: { ...(metadataDoc.tasks ?? {}), [selectedElement.id]: meta }
-    };
+  const updateTaskMetadata = (elementId: string, meta: TaskMetadata) => {
+    if (!activeVersionCurrent) return;
+    if (effectiveMode !== "EDIT") return;
+    markDirty();
+    const nextDoc: DiagramMetadataDoc = { tasks: { ...(metadataDoc.tasks ?? {}), [elementId]: meta } };
     setMetadataDoc(nextDoc);
 
-    if (mode === "EDIT") {
-      try {
-        const modeling = instanceRef.current.get("modeling");
-        modeling.updateProperties(selectedElement, metadataToProperties(meta));
-      } catch {}
-    }
-
-    void saveDiagramMetadata(props.spaceName, props.fileName, nextDoc).then((saved) => {
-      if (saved && typeof saved === "object" && saved.tasks && typeof saved.tasks === "object") {
-        setMetadataDoc({ tasks: saved.tasks });
+    try {
+      const elementRegistry = instanceRef.current?.get?.("elementRegistry");
+      const element = elementRegistry?.get?.(elementId);
+      const modeling = instanceRef.current?.get?.("modeling");
+      if (element && modeling) {
+        modeling.updateProperties(element, metadataToProperties(meta));
       }
-    });
-
-    setPanelOpen(false);
+    } catch {}
   };
 
   return (
@@ -236,21 +298,40 @@ export function BpmnEditor(props: Props) {
             Back
           </button>
           <div style={{ fontSize: 16, fontWeight: 900 }}>{title}</div>
-          <div style={{ fontSize: 12, color: "#6b647d" }}>{props.spaceName} • {props.fileName}</div>
+          <div style={{ fontSize: 12, color: "#6b647d" }}>{props.spaceName} • {props.fileName} • {props.processId}</div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={() => setMode("VIEW")} style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #d8d4e6", background: mode === "VIEW" ? "#4E1B8C" : "#fff", color: mode === "VIEW" ? "#fff" : "#2d2742", cursor: "pointer", fontWeight: 800 }}>
+          <button onClick={() => setUserMode("VIEW")} style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #d8d4e6", background: effectiveMode === "VIEW" ? "#4E1B8C" : "#fff", color: effectiveMode === "VIEW" ? "#fff" : "#2d2742", cursor: "pointer", fontWeight: 800 }}>
             View
           </button>
-          <button onClick={() => setMode("EDIT")} style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #d8d4e6", background: mode === "EDIT" ? "#4E1B8C" : "#fff", color: mode === "EDIT" ? "#fff" : "#2d2742", cursor: "pointer", fontWeight: 800 }}>
-            Update
-          </button>
-          {mode === "EDIT" && saveState === "idle" ? (
+          {effectiveMode !== "EDIT" ? (
+            <button
+              onClick={() => {
+                if (!activeVersionCurrent) return;
+                setUserMode("EDIT");
+              }}
+              disabled={!activeVersionCurrent}
+              style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #d8d4e6", background: "#fff", color: "#2d2742", cursor: !activeVersionCurrent ? "default" : "pointer", fontWeight: 800, opacity: !activeVersionCurrent ? 0.6 : 1 }}
+            >
+              Update
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setUserMode("VIEW");
+                setSaveState("idle");
+              }}
+              style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #d8d4e6", background: "#fff", color: "#2d2742", cursor: "pointer", fontWeight: 800 }}
+            >
+              Cancel
+            </button>
+          )}
+          {effectiveMode === "EDIT" && saveState === "idle" ? (
             <button onClick={save} style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #4E1B8C", background: "#4E1B8C", color: "#fff", cursor: "pointer", fontWeight: 900 }}>
               Save
             </button>
           ) : null}
-          {mode === "EDIT" && saveState === "saved" ? (
+          {effectiveMode === "EDIT" && saveState === "saved" ? (
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8, border: "1px solid #b7e3c2", background: "#e9f7ee", color: "#157347", fontWeight: 900 }}>
               <span style={{ display: "inline-block", width: 18, height: 18, borderRadius: 9, background: "#157347", color: "#fff", lineHeight: "18px", textAlign: "center", fontSize: 12 }}>✓</span>
               <span>Saved</span>
@@ -264,18 +345,31 @@ export function BpmnEditor(props: Props) {
 
       {loadError ? <div style={{ padding: "8px 12px", color: "#b42318", fontSize: 12 }}>{loadError}</div> : null}
 
-      <div style={{ flex: 1, padding: 12 }}>
-        <div ref={containerRef} style={{ width: "100%", height: "100%", background: "#fff", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }} />
+      <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
+        <VersionSidebar
+          versions={versions}
+          activeVersionNumber={activeVersionNumber}
+          onSelectVersion={(v) => {
+            void loadVersion(v);
+          }}
+        />
+        <div style={{ flex: 1, padding: 12, minWidth: 0 }}>
+          <div ref={containerRef} style={{ width: "100%", height: "100%", background: "#fff", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }} />
+        </div>
       </div>
 
       <DetailsPanel
         open={panelOpen}
-        mode={mode}
+        mode={effectiveMode}
         element={selectedElement}
         taskName={selectedName}
-        initial={initialMeta}
+        value={selectedElementId ? (metadataDoc.tasks?.[selectedElementId] ?? emptyTaskMetadata()) : emptyTaskMetadata()}
+        onChange={(next) => {
+          if (!selectedElementId) return;
+          updateTaskMetadata(selectedElementId, next);
+        }}
         onClose={() => setPanelOpen(false)}
-        onSave={applyMetadata}
+        onSave={() => setPanelOpen(false)}
       />
 
       {exportOpen ? (
@@ -320,12 +414,16 @@ export function BpmnEditor(props: Props) {
                       setLoadError("Unable to export diagram image");
                       return;
                     }
-                    const blob = await exportDiagramPdf(props.spaceName, props.fileName, svg);
+                    if (!activeVersionNumber) {
+                      setLoadError("No version selected");
+                      return;
+                    }
+                    const blob = await exportProcessVersionPdf(props.processId, activeVersionNumber, svg);
                     if (!blob) {
                       setLoadError("Failed to generate PDF");
                       return;
                     }
-                    const outName = props.fileName.endsWith(".bpmn") ? props.fileName.replace(".bpmn", ".pdf") : props.fileName + ".pdf";
+                    const outName = props.processId.replace(":", "_") + "-v" + activeVersionNumber + ".pdf";
                     downloadBlob(outName, blob);
                     setExportOpen(false);
                   } finally {

@@ -109,6 +109,73 @@ public class PdfExportService {
     }
   }
 
+  public byte[] generatePdfFromSnapshot(String processId, int versionNumber, String svg, String bpmnXml, Map<String, Object> taskMetadata) {
+    List<ServiceTaskInfo> serviceTasks = extractServiceTasks(bpmnXml);
+    DiagramMetadataDoc doc = readMetadataFromObject(taskMetadata);
+
+    byte[] png = svgToPng(svg);
+    try (PDDocument pdf = new PDDocument()) {
+      float margin = 40f;
+      PDPage page = new PDPage(PDRectangle.A4);
+      pdf.addPage(page);
+      float pageWidth = page.getMediaBox().getWidth();
+      float pageHeight = page.getMediaBox().getHeight();
+      float y = pageHeight - margin;
+
+      PDImageXObject image = PDImageXObject.createFromByteArray(pdf, png, processId + "-v" + versionNumber + ".png");
+
+      try (PDPageContentStream cs = new PDPageContentStream(pdf, page)) {
+        y = writeTitleForVersion(cs, margin, y, processId, versionNumber);
+        y -= 10f;
+
+        float maxW = pageWidth - (2 * margin);
+        float maxH = 320f;
+        float iw = image.getWidth();
+        float ih = image.getHeight();
+        float scale = Math.min(maxW / iw, maxH / ih);
+        float drawW = iw * scale;
+        float drawH = ih * scale;
+        cs.drawImage(image, margin, y - drawH, drawW, drawH);
+        y = y - drawH - 18f;
+
+        cs.beginText();
+        cs.setFont(PDType1Font.HELVETICA_BOLD, 12);
+        cs.newLineAtOffset(margin, y);
+        cs.showText("Service Tasks");
+        cs.endText();
+        y -= 16f;
+
+        if (serviceTasks.isEmpty()) {
+          y = writeWrapped(cs, margin, y, 11, "No Service Tasks found in this diagram.");
+        }
+      }
+
+      if (!serviceTasks.isEmpty()) {
+        int idx = 0;
+        PDPage currentPage = page;
+        float currentY = y;
+        while (idx < serviceTasks.size()) {
+          if (currentY < 120f) {
+            currentPage = new PDPage(PDRectangle.A4);
+            pdf.addPage(currentPage);
+            currentY = currentPage.getMediaBox().getHeight() - margin;
+          }
+          try (PDPageContentStream cs = new PDPageContentStream(pdf, currentPage, PDPageContentStream.AppendMode.APPEND, true)) {
+            currentY = writeServiceTaskBlock(cs, margin, currentY, serviceTasks.get(idx), doc);
+          }
+          idx++;
+        }
+      }
+
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      pdf.save(out);
+      return out.toByteArray();
+    } catch (Exception e) {
+      log.error("Failed to generate PDF report (processId={}, versionNumber={})", processId, versionNumber, e);
+      throw new ExportPdfException("Failed to generate PDF report for " + processId + " v" + versionNumber, e);
+    }
+  }
+
   private float writeTitle(PDPageContentStream cs, float x, float y, String fileName, String spaceName) throws Exception {
     cs.beginText();
     cs.setFont(PDType1Font.HELVETICA_BOLD, 18);
@@ -121,6 +188,22 @@ public class PdfExportService {
     cs.setFont(PDType1Font.HELVETICA, 11);
     cs.newLineAtOffset(x, y);
     cs.showText("Space: " + spaceName + "    File: " + fileName + "    Date: " + LocalDate.now());
+    cs.endText();
+    return y - 6f;
+  }
+
+  private float writeTitleForVersion(PDPageContentStream cs, float x, float y, String processId, int versionNumber) throws Exception {
+    cs.beginText();
+    cs.setFont(PDType1Font.HELVETICA_BOLD, 18);
+    cs.newLineAtOffset(x, y);
+    cs.showText("BPMN Report");
+    cs.endText();
+    y -= 22f;
+
+    cs.beginText();
+    cs.setFont(PDType1Font.HELVETICA, 11);
+    cs.newLineAtOffset(x, y);
+    cs.showText("Process: " + processId + "    Version: v" + versionNumber + "    Date: " + LocalDate.now());
     cs.endText();
     return y - 6f;
   }
@@ -216,6 +299,23 @@ public class PdfExportService {
       return doc;
     } catch (Exception e) {
       log.warn("Failed to read metadata JSON for (spaceName={}, fileName={}). Continuing with empty metadata.", spaceName, fileName, e);
+      DiagramMetadataDoc doc = new DiagramMetadataDoc();
+      doc.tasks = new HashMap<>();
+      return doc;
+    }
+  }
+
+  private DiagramMetadataDoc readMetadataFromObject(Map<String, Object> taskMetadata) {
+    try {
+      if (taskMetadata == null) {
+        DiagramMetadataDoc doc = new DiagramMetadataDoc();
+        doc.tasks = new HashMap<>();
+        return doc;
+      }
+      DiagramMetadataDoc doc = objectMapper.convertValue(taskMetadata, DiagramMetadataDoc.class);
+      if (doc.tasks == null) doc.tasks = new HashMap<>();
+      return doc;
+    } catch (Exception e) {
       DiagramMetadataDoc doc = new DiagramMetadataDoc();
       doc.tasks = new HashMap<>();
       return doc;

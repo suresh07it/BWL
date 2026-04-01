@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import type { DetailsTab, EditorMode, TaskMetadata } from "./types";
-import { emptyTaskMetadata } from "./types";
 
 type Props = {
   open: boolean;
   mode: EditorMode;
   element: any | null;
   taskName: string;
-  initial: TaskMetadata;
+  value: TaskMetadata;
+  onChange: (next: TaskMetadata) => void;
   onClose: () => void;
   onSave: (metadata: TaskMetadata) => void;
 };
@@ -92,12 +92,10 @@ function ListEditor(props: { label: string; values: string[]; disabled: boolean;
 
 export function DetailsPanel(props: Props) {
   const [activeTab, setActiveTab] = useState<DetailsTab>("Details");
-  const [draft, setDraft] = useState<TaskMetadata>(emptyTaskMetadata());
 
   useEffect(() => {
     if (!props.open) return;
     setActiveTab("Details");
-    setDraft(props.initial);
   }, [props.open, props.element]);
 
   const disabled = props.mode === "VIEW";
@@ -137,7 +135,7 @@ export function DetailsPanel(props: Props) {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {props.mode === "EDIT" ? (
-              <button onClick={() => props.onSave(draft)} style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.14)", color: "#fff", cursor: "pointer", fontWeight: 900 }}>
+              <button onClick={() => props.onSave(props.value)} style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.14)", color: "#fff", cursor: "pointer", fontWeight: 900 }}>
                 Save
               </button>
             ) : null}
@@ -158,21 +156,21 @@ export function DetailsPanel(props: Props) {
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <Section title="Participant">
               <input
-                value={draft.participant}
+                value={props.value.participant}
                 disabled={disabled}
-                onChange={(e) => setDraft({ ...draft, participant: e.target.value })}
+                onChange={(e) => props.onChange({ ...props.value, participant: e.target.value })}
                 placeholder="Participant"
                 style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #d8d4e6" }}
               />
             </Section>
             <Section title="Owners & Experts">
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <ListEditor label="Business Owners" values={draft.businessOwners} disabled={disabled} onChange={(v) => setDraft({ ...draft, businessOwners: v })} />
-                <ListEditor label="Experts" values={draft.experts} disabled={disabled} onChange={(v) => setDraft({ ...draft, experts: v })} />
+                <ListEditor label="Business Owners" values={props.value.businessOwners} disabled={disabled} onChange={(v) => props.onChange({ ...props.value, businessOwners: v })} />
+                <ListEditor label="Experts" values={props.value.experts} disabled={disabled} onChange={(v) => props.onChange({ ...props.value, experts: v })} />
               </div>
             </Section>
             <Section title="Systems">
-              <ListEditor label="Systems" values={draft.systems} disabled={disabled} onChange={(v) => setDraft({ ...draft, systems: v })} />
+              <ListEditor label="Systems" values={props.value.systems} disabled={disabled} onChange={(v) => props.onChange({ ...props.value, systems: v })} />
             </Section>
             <Section title="Timing">
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -180,9 +178,9 @@ export function DetailsPanel(props: Props) {
                   <div style={{ fontSize: 12, fontWeight: 700, color: "#3b3552" }}>Due Date</div>
                   <input
                     type="date"
-                    value={draft.dueDate}
+                    value={props.value.dueDate}
                     disabled={disabled}
-                    onChange={(e) => setDraft({ ...draft, dueDate: e.target.value })}
+                    onChange={(e) => props.onChange({ ...props.value, dueDate: e.target.value })}
                     style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #d8d4e6", marginTop: 6 }}
                   />
                 </div>
@@ -191,16 +189,16 @@ export function DetailsPanel(props: Props) {
                   <div style={{ fontSize: 12, fontWeight: 700, color: "#3b3552" }}>Cycle Time</div>
                   <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
                     <input
-                      value={draft.cycleTimeValue}
+                      value={props.value.cycleTimeValue}
                       disabled={disabled}
-                      onChange={(e) => setDraft({ ...draft, cycleTimeValue: e.target.value })}
+                      onChange={(e) => props.onChange({ ...props.value, cycleTimeValue: e.target.value })}
                       placeholder="Value"
                       style={{ flex: 1, padding: "10px 12px", borderRadius: 8, border: "1px solid #d8d4e6" }}
                     />
                     <select
-                      value={draft.cycleTimeUnit}
+                      value={props.value.cycleTimeUnit}
                       disabled={disabled}
-                      onChange={(e) => setDraft({ ...draft, cycleTimeUnit: e.target.value })}
+                      onChange={(e) => props.onChange({ ...props.value, cycleTimeUnit: e.target.value })}
                       style={{ width: 140, padding: "10px 12px", borderRadius: 8, border: "1px solid #d8d4e6", background: disabled ? "#f4f0fa" : "#fff" }}
                     >
                       {units.map((u) => <option key={u} value={u}>{u}</option>)}
@@ -211,16 +209,16 @@ export function DetailsPanel(props: Props) {
                   <div style={{ fontSize: 12, fontWeight: 700, color: "#3b3552" }}>Wait Time</div>
                   <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
                     <input
-                      value={draft.waitTimeValue}
+                      value={props.value.waitTimeValue}
                       disabled={disabled}
-                      onChange={(e) => setDraft({ ...draft, waitTimeValue: e.target.value })}
+                      onChange={(e) => props.onChange({ ...props.value, waitTimeValue: e.target.value })}
                       placeholder="Value"
                       style={{ flex: 1, padding: "10px 12px", borderRadius: 8, border: "1px solid #d8d4e6" }}
                     />
                     <select
-                      value={draft.waitTimeUnit}
+                      value={props.value.waitTimeUnit}
                       disabled={disabled}
-                      onChange={(e) => setDraft({ ...draft, waitTimeUnit: e.target.value })}
+                      onChange={(e) => props.onChange({ ...props.value, waitTimeUnit: e.target.value })}
                       style={{ width: 140, padding: "10px 12px", borderRadius: 8, border: "1px solid #d8d4e6", background: disabled ? "#f4f0fa" : "#fff" }}
                     >
                       {units.map((u) => <option key={u} value={u}>{u}</option>)}
