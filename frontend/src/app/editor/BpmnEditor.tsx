@@ -8,6 +8,7 @@ import { emptyMetadataDoc, emptyTaskMetadata, metadataToProperties } from "./typ
 import { createProcessVersion, exportProcessVersionPdf, getProcessVersion, listProcessVersions } from "../api/processVersionApi";
 import type { VersionSummary } from "../api/processVersionApi";
 import { VersionSidebar } from "./VersionSidebar";
+import { bwlColorModule } from "./bpmnColor";
 
 type Props = {
   spaceName: string;
@@ -62,6 +63,7 @@ export function BpmnEditor(props: Props) {
   const [activeVersionCurrent, setActiveVersionCurrent] = useState<boolean>(true);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [selectedElementName, setSelectedElementName] = useState<string | null>(null);
+  const selectedElementIdRef = useRef<string | null>(null);
   const saveDoneTimerRef = useRef<number | null>(null);
 
   const markDirty = () => {
@@ -73,6 +75,10 @@ export function BpmnEditor(props: Props) {
   useEffect(() => {
     saveStateRef.current = saveState;
   }, [saveState]);
+
+  useEffect(() => {
+    selectedElementIdRef.current = selectedElementId;
+  }, [selectedElementId]);
 
   useEffect(() => {
     if (saveDoneTimerRef.current) {
@@ -165,7 +171,7 @@ export function BpmnEditor(props: Props) {
     if (!containerRef.current) return;
     instanceRef.current = effectiveMode === "VIEW"
       ? new Viewer({ container: containerRef.current, moddleExtensions: { ibm: ibmModdle as any } })
-      : new Modeler({ container: containerRef.current, moddleExtensions: { ibm: ibmModdle as any } });
+      : new Modeler({ container: containerRef.current, moddleExtensions: { ibm: ibmModdle as any }, additionalModules: [bwlColorModule] });
 
     const eventBus = instanceRef.current.get("eventBus");
     const elementRegistry = instanceRef.current.get("elementRegistry");
@@ -178,7 +184,8 @@ export function BpmnEditor(props: Props) {
 
     const onElementChanged = (e: any) => {
       const el = e?.element;
-      if (!el || !selectedElement || el.id !== selectedElement.id) return;
+      const currentId = selectedElementIdRef.current;
+      if (!el || !currentId || el.id !== currentId) return;
       setSelectedName(el.businessObject?.name || el.id);
     };
 
@@ -196,8 +203,6 @@ export function BpmnEditor(props: Props) {
     eventBus.on("element.changed", onElementChanged);
     eventBus.on("commandStack.shape.create.postExecuted", onCreated);
     eventBus.on("commandStack.changed", onCommand);
-
-    // no accessories panel; selection changes are not used
 
     const domDblClick = (ev: MouseEvent) => {
       const target = ev.target as Element | null;
